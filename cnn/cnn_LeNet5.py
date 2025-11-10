@@ -9,7 +9,7 @@ from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torchvision import transforms,datasets
 
-from utils.visualization import plot_metrics
+from utils.visualization import plot_metrics,visualize_images
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(SCRIPT_DIR, os.pardir, 'model')
@@ -73,12 +73,12 @@ for layer in CNN().net:
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(
     model.parameters(),
-    lr = 0.01,
+    lr = 0.001,
     momentum=0.5
 )
 
 def train_model():
-    epochs = 50
+    epochs = 30
     train_losses = []
     train_accuracies = []
     best_state_dict = model.state_dict()
@@ -114,16 +114,23 @@ def test_model():
     state_dict = torch.load(os.path.join(MODEL_DIR,'cnn_LeNet5.pth'))
     model.load_state_dict(state_dict)
     model.eval()
+    predictions = []  # 用于保存预测结果
+    images = []       # 用于保存输入图像
+    labels = []       # 用于保存实际标签
     with torch.no_grad():
         corrent = 0
         total = 0
-        for X,Y in test_loader:
+        for X, Y in test_loader:
             X,Y = X.to(device),Y.to(device)
             Pred = model(X)
             Pred_index = torch.argmax(Pred.data,dim=1)
             corrent += torch.sum(Pred_index == Y)
             total += Y.size(0)
+            predictions.extend(Pred_index.cpu().numpy())  # 保存预测结果到 CPU 上
+            images.extend(X.cpu().numpy())     # 保存输入图像到 CPU 上
+            labels.extend(Y.cpu().numpy())     # 保存真实标签到 CPU 上
     print(f"测试准确率：{corrent/total}")
+    visualize_images(images[:6], labels[:6], predictions[:6])
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')

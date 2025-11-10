@@ -8,8 +8,7 @@ import multiprocessing
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torchvision import transforms,datasets
-import matplotlib.pyplot as plt
-from utils.visualization import plot_metrics
+from utils.visualization import plot_metrics,visualize_images
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(SCRIPT_DIR, os.pardir, 'model')
@@ -81,7 +80,7 @@ model = AlexNet().to(device)
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.AdamW(
     model.parameters(),
-    lr = 0.01,
+    lr = 0.001,
 )
 
 def train_model():
@@ -122,42 +121,24 @@ def test_model():
     state_dict = torch.load(os.path.join(MODEL_DIR,'cnn_AlexNet.pth'))
     model.load_state_dict(state_dict)
     model.eval()
-    images, labels, predictions = batch_predict_images(model, train_loader, num_images=6)
-    visualize_images(images, labels, predictions)
-
-def batch_predict_images(model, dataloader, num_images=6):
     predictions = []  # 用于保存预测结果
     images = []       # 用于保存输入图像
     labels = []       # 用于保存实际标签
 
     with torch.no_grad():
-        for i, (X, Y) in enumerate(dataloader):
-            if i * 64 >= num_images:  # 控制处理的图像数量
-                break
+        total = 0
+        corrent = 0
+        for X, Y in test_loader:
             X,Y = X.to(device),Y.to(device)  
-
             Pred = model(X)
             Pred_index = torch.argmax(Pred.data,dim=1)
-
+            total += Y.size(0)
+            corrent += torch.sum(Pred_index == Y)
             predictions.extend(Pred_index.cpu().numpy())  # 保存预测结果到 CPU 上
             images.extend(X.cpu().numpy())     # 保存输入图像到 CPU 上
             labels.extend(Y.cpu().numpy())     # 保存真实标签到 CPU 上
-
-    return images[:num_images], labels[:num_images], predictions[:num_images]
-
-def visualize_images(images, labels, predictions):
-    fig, axes = plt.subplots(2, 3, figsize=(10, 7))  
-    axes = axes.ravel()  
-
-    for i in range(6):
-        image = images[i].squeeze()  
-        ax = axes[i]
-        ax.imshow(image, cmap='gray')  
-        ax.set_title(f"Pred: {predictions[i]} | Actual: {labels[i]}")  
-        ax.axis('off')  
-
-    plt.tight_layout() 
-    plt.show()  
+    print(f"测试准确率：{corrent/total}")
+    visualize_images(images[:6], labels[:6], predictions[:6])
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')

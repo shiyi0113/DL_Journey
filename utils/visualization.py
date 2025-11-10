@@ -32,3 +32,17 @@ def plot_metrics(losses, accuracies):
     
     plt.tight_layout() # 自动调整子图参数，使之填充整个图像区域
     plt.show() # 显示图表
+
+def visualize_images(images, labels, predictions):
+    fig, axes = plt.subplots(2, 3, figsize=(10, 7))  
+    axes = axes.ravel()  
+
+    for i in range(6):
+        image = images[i].squeeze()  
+        ax = axes[i]
+        ax.imshow(image, cmap='gray')  
+        ax.set_title(f"Pred: {predictions[i]} | Actual: {labels[i]}")  
+        ax.axis('off')  
+
+    plt.tight_layout() 
+    plt.show()  
