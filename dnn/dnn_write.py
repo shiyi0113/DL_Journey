@@ -100,7 +100,7 @@ def test_model():
     model = DNN().to(device)
     state_dict = torch.load(os.path.join(MODEL_DIR,'dnn_write.pth'))
     model.load_state_dict(state_dict)
-
+    model.eval()
     with torch.no_grad():
         corrent = 0
         total = 0

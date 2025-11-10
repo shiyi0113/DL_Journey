@@ -113,7 +113,7 @@ def test_model():
     model = CNN().to(device)
     state_dict = torch.load(os.path.join(MODEL_DIR,'cnn_LeNet5.pth'))
     model.load_state_dict(state_dict)
-
+    model.eval()
     with torch.no_grad():
         corrent = 0
         total = 0
