@@ -10,7 +10,6 @@ import os
 import torch
 import torch.nn as nn
 import multiprocessing
-import matplotlib.pyplot as plt
 from utils.visualization import plot_metrics
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -77,7 +76,7 @@ def train_model():
         Pred_idx = torch.argmax(Pred, dim=1)
         Pred_oh = torch.zeros_like(Pred)
         Pred_oh.scatter_(1, Pred_idx.unsqueeze(1), 1)
-        
+
         correct = torch.sum((Pred_oh == Y).all(1))
         total = Y.size(0)
         accuracy = correct / total
