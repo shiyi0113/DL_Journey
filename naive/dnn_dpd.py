@@ -26,11 +26,10 @@ df = pd.read_csv(os.path.join(SCRIPT_DIR, os.pardir, 'data/diabetes_prediction_d
 categorical_cols = ['gender', 'smoking_history']
 df = pd.get_dummies(df, columns=categorical_cols, drop_first=True)
 
+# 特征值缩放
 X = df.drop(columns=['diabetes'])
 Y = df['diabetes']
 continuous_cols = ['age', 'bmi', 'HbA1c_level', 'blood_glucose_level']
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.3, random_state=42, stratify=Y) 
 scaler = StandardScaler()
 X_train[continuous_cols] = scaler.fit_transform(X_train[continuous_cols])
