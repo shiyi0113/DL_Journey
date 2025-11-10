@@ -1,8 +1,17 @@
-'''三分类问题'''
+'''三分类问题
+    生成10000个样本,3个输入特征+3个输出特征:
+    - 每个输入特征相互独立，均服从均匀分布;
+    - 当 x1+x2+x3<1  时,y1为1,否则y1为0;
+    - 当 1≤x1+x2+x3<2时,y2为1,否则y2为0;
+    - 当 x1+x2+x3≥2  时,y3为1,否则y3为0.
+'''
+
 import os
 import torch
 import torch.nn as nn
 import multiprocessing
+import matplotlib.pyplot as plt
+from utils.visualization import plot_metrics
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_DIR = os.path.join(SCRIPT_DIR, os.pardir, 'model')
@@ -25,8 +34,8 @@ y3 = (x1+x2+x3>=2).float()
 Data = torch.cat([x1,x2,x3,y1,y2,y3],axis=1)
 Data = Data.to(device)
 
-train_size = int(len(Data)*0.7)
-test_size = int(len(Data)*0.3)
+train_size = int(Data.size(0)*0.7)
+test_size = int(Data.size(0)*0.3)
 Data = Data[torch.randperm(Data.size(0)),:] 
 train_Data = Data[:train_size,:]
 test_Data = Data[train_size:,:]
@@ -55,14 +64,28 @@ def train_model():
     epochs = 1000
     X = train_Data[:,:3]
     Y = train_Data[:,-3:]
+    train_losses = []
+    train_accuracies = []
+    model.train()
     for epoch in range(epochs):
-        model.train()
         Pred = model(X)
         loss = loss_fn(Pred,Y)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
+        Pred_idx = torch.argmax(Pred, dim=1)
+        Pred_oh = torch.zeros_like(Pred)
+        Pred_oh.scatter_(1, Pred_idx.unsqueeze(1), 1)
+        
+        correct = torch.sum((Pred_oh == Y).all(1))
+        total = Y.size(0)
+        accuracy = correct / total
+        train_losses.append(loss.item()) 
+        train_accuracies.append(accuracy.item())
+
     torch.save(model.state_dict(), os.path.join(MODEL_DIR, 'dnn_naive.pth'))
+    return train_losses, train_accuracies
 
 def test_model():
     '''测试'''
@@ -83,5 +106,6 @@ def test_model():
 
 if __name__ == '__main__':
     multiprocessing.set_start_method('spawn')
-    train_model()
+    losses, accuracies = train_model()
+    plot_metrics(losses, accuracies)
     test_model()
