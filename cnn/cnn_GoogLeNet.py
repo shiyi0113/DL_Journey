@@ -23,7 +23,7 @@ device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
 transform = transforms.Compose([
     transforms.Resize((224,224)),
     transforms.ToTensor(),
-    transforms.Normalize((0.5,), (0.5,)) 
+    transforms.Normalize((0.1307,), (0.3081,))
 ])
 
 train_Data = datasets.MNIST(
@@ -49,7 +49,8 @@ class BasicConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, **kwargs):
         super(BasicConv2d, self).__init__()
         self.conv = nn.Sequential(
-            nn.Conv2d(in_channels, out_channels, **kwargs),
+            nn.Conv2d(in_channels, out_channels,bias=False, **kwargs),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(inplace=True)
         )
 
@@ -90,7 +91,7 @@ class InceptionAux(nn.Module):
             BasicConv2d(in_channels, 128, kernel_size=1),
             nn.Flatten(),
             nn.Linear(128 * 4 * 4, 1024),nn.ReLU(inplace=True),
-            nn.Dropout(0.7),
+            nn.Dropout(0.5),
             nn.Linear(1024, num_classes),
         )
 
@@ -108,10 +109,8 @@ class GoogLeNet(nn.Module):
         self.stem = nn.Sequential(
             BasicConv2d(1, 64, kernel_size=7, stride=2, padding=3),
             nn.MaxPool2d(3, stride=2, padding=1),
-            nn.LocalResponseNorm(size=5, alpha=1e-4, beta=0.75, k=2),
             BasicConv2d(64, 64, kernel_size=1),
             BasicConv2d(64, 192, kernel_size=3, padding=1),
-            nn.LocalResponseNorm(size=5, alpha=1e-4, beta=0.75, k=2),
             nn.MaxPool2d(3, stride=2, padding=1)
         )
         
@@ -177,7 +176,7 @@ model = GoogLeNet(aux_logits=True).to(device)
 loss_fn = nn.CrossEntropyLoss()
 optimizer = torch.optim.AdamW(
     model.parameters(),
-    lr = 0.001,
+    lr = 0.005,
 )
 def train_model():
     epochs = 2
