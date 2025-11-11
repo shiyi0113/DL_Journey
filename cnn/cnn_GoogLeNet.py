@@ -1,5 +1,5 @@
 """
-手写数字识别
+手写数字识别 - GoogLeNet-BN
 """
 import os
 import torch
@@ -8,7 +8,6 @@ import multiprocessing
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torchvision import transforms,datasets
-import torch.nn.functional as F
 from utils.visualization import plot_metrics,visualize_images
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -168,7 +167,6 @@ class GoogLeNet(nn.Module):
             return x, aux2, aux1
         
         return x
-
 
 model = GoogLeNet(aux_logits=True).to(device)
 

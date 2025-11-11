@@ -1,5 +1,5 @@
 """
-手写数字识别
+手写数字识别 - AlexNet
 """
 import os
 import torch
@@ -43,7 +43,6 @@ train_loader = DataLoader(train_Data,shuffle=True,batch_size=128,num_workers=2,p
 test_loader = DataLoader(test_Data,shuffle=False,batch_size=128,num_workers=2,pin_memory=True)
 
 # 模型 样本输入是1*227*227 输出是10
-
 class BasicConv2d(nn.Module):
     def __init__(self, in_channels, out_channels, **kwargs):
         super(BasicConv2d, self).__init__()

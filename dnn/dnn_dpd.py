@@ -18,7 +18,6 @@ if not os.path.exists(MODEL_DIR):
 
 # 检查GPU
 device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
-print(f'Using device:{device}')
 
 # 数据准备
 df = pd.read_csv(os.path.join(SCRIPT_DIR, os.pardir, 'data/diabetes_prediction_dataset.csv'))
@@ -102,6 +101,7 @@ def test_model():
     print(f'测试准确率：{corrent/total}')
 
 if __name__ == '__main__':
+    print(f'Using device:{device}')
     multiprocessing.set_start_method('spawn')
     losses, accuracies = train_model()
     plot_metrics(losses, accuracies)

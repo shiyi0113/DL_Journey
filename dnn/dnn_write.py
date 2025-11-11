@@ -1,5 +1,5 @@
 """
-手写数字识别
+手写数字识别 - DNN
 """
 import os
 import torch
@@ -8,7 +8,6 @@ import multiprocessing
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torchvision import transforms,datasets
-
 from utils.visualization import plot_metrics
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -18,7 +17,6 @@ if not os.path.exists(MODEL_DIR):
 
 # 检查GPU
 device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
-print(f'Using device:{device}')
 
 # 数据准备
 transform = transforms.Compose([
@@ -113,6 +111,7 @@ def test_model():
     print(f"测试准确率：{corrent/total}")
 
 if __name__ == '__main__':
+    print(f'Using device:{device}')
     multiprocessing.set_start_method('spawn')
     losses, accuracies = train_model()
     plot_metrics(losses, accuracies)

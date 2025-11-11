@@ -1,5 +1,5 @@
 """
-手写数字识别
+手写数字识别 - ResNet
 """
 import os
 import torch
@@ -8,7 +8,6 @@ import multiprocessing
 from tqdm import tqdm
 from torch.utils.data import DataLoader
 from torchvision import transforms,datasets
-import torch.nn.functional as F
 from utils.visualization import plot_metrics,visualize_images
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -62,7 +61,6 @@ class ResidualBlock(nn.Module):
     def __init__(self,in_channels):
         super(ResidualBlock,self).__init__()
         self.Res = nn.Sequential(
-            BasicConv2d(in_channels,in_channels,kernel_size = 3,padding = 1),
             nn.Conv2d(in_channels,in_channels,kernel_size=3,padding=1),
             nn.BatchNorm2d(in_channels)
         )
@@ -76,10 +74,12 @@ class ResNet(nn.Module):
         self.net = nn.Sequential(
             BasicConv2d(1,16,kernel_size = 5),
             nn.MaxPool2d(kernel_size=2,stride=2),
+            BasicConv2d(16,16,kernel_size = 3,padding = 1),
             ResidualBlock(in_channels=16),
 
             BasicConv2d(16,32,kernel_size = 5),
             nn.MaxPool2d(kernel_size=2,stride=2),
+            BasicConv2d(32,32,kernel_size = 3,padding = 1),
             ResidualBlock(in_channels=32),
             nn.Flatten(),
             nn.Linear(512,10)

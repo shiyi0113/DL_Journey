@@ -1,5 +1,5 @@
 """
-手写数字识别
+手写数字识别 - LeNet-5
 """
 import os
 import torch
