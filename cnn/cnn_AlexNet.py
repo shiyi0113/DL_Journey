@@ -17,7 +17,6 @@ if not os.path.exists(MODEL_DIR):
 
 # 检查GPU
 device = torch.device("cuda" if torch.cuda.is_available() else 'cpu')
-print(f'Using device:{device}')
 
 # 数据准备
 transform = transforms.Compose([
@@ -44,23 +43,36 @@ train_loader = DataLoader(train_Data,shuffle=True,batch_size=128,num_workers=2,p
 test_loader = DataLoader(test_Data,shuffle=False,batch_size=128,num_workers=2,pin_memory=True)
 
 # 模型 样本输入是1*227*227 输出是10
+
+class BasicConv2d(nn.Module):
+    def __init__(self, in_channels, out_channels, **kwargs):
+        super(BasicConv2d, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv2d(in_channels, out_channels, **kwargs),
+            nn.ReLU(inplace=True)
+        )
+
+    def forward(self, x):
+        y = self.conv(x)
+        return y
+
 class AlexNet(nn.Module):
     def __init__(self):
         super(AlexNet, self).__init__()
         # 定义卷积层和池化层
         self.features = nn.Sequential(
-            nn.Conv2d(1, 64, kernel_size=11, stride=4, padding=2), nn.ReLU(inplace=True),  
-            nn.MaxPool2d(kernel_size=3, stride=2),  
-            nn.Conv2d(64, 192, kernel_size=5, padding=2), nn.ReLU(inplace=True),
+            BasicConv2d(1,64,kernel_size = 11,stride = 4,padding = 2), 
             nn.MaxPool2d(kernel_size=3, stride=2),
-            nn.Conv2d(192, 384, kernel_size=3, padding=1), nn.ReLU(inplace=True),
-            nn.Conv2d(384, 256, kernel_size=3, padding=1), nn.ReLU(inplace=True),
-            nn.Conv2d(256, 256, kernel_size=3, padding=1), nn.ReLU(inplace=True),
+            BasicConv2d(64,192,kernel_size = 5,padding = 2),  
+            nn.MaxPool2d(kernel_size=3, stride=2),
+            BasicConv2d(192,384,kernel_size = 3,padding = 1),
+            BasicConv2d(384,256,kernel_size = 3,padding = 1),
+            BasicConv2d(256,256,kernel_size = 3,padding = 1),
             nn.MaxPool2d(kernel_size=3, stride=2)  
         )
         # 定义展平层
         self.flatten = nn.Flatten()
-        # 定义全连接层
+        # 定义分类层
         self.classifier = nn.Sequential(
             nn.Dropout(),  
             nn.Linear(256 * 6 * 6, 4096),  nn.ReLU(inplace=True),
@@ -141,6 +153,7 @@ def test_model():
     visualize_images(images[:6], labels[:6], predictions[:6])
 
 if __name__ == '__main__':
+    print(f'Using device:{device}')
     multiprocessing.set_start_method('spawn')
     losses, accuracies = train_model()
     plot_metrics(losses, accuracies)
